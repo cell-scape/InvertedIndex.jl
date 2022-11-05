@@ -1,10 +1,9 @@
 """
-    build_document_vector(dictionary::DataFrame, postings::DataFrame)::Matrix{Float64}
+    build_document_vector(postings::DataFrame)::Matrix{Float64}
 
 Build a document vector of terms vs doc_ids using tfidf as the score.
 
 # Arguments
-- `dictionary::DataFrame`: Dictionary table from inverted index
 - `postings::DataFrame`: Postings table from inverted index
 
 # Returns
@@ -17,8 +16,8 @@ julia> A = build_document_vector(dictionary, postings)
 [...]
 ```
 """
-function build_document_vector(dictionary, postings)
-    terms = unique(dictionary.term)
+function build_document_vector(postings)
+    terms = unique(postings.term)
     documents = unique(postings.doc_id)
     A = Matrix{Float64}((length(terms), length(documents)), undef)
 end

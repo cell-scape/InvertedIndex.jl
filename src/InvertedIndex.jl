@@ -6,11 +6,14 @@ using DataFramesMeta
 using DataStructures: counter, Accumulator
 using Dates
 using LibPQ
+using LinearAlgebra
 
 include("db.jl")
 include("inverted_index.jl")
+include("document_vector.jl")
 
 export build_inverted_index, build_dictionary_table, build_postings_table, connect, get_table, julia_main, CONN
+export build_document_vector
 
 #= CLI =#
 
@@ -80,6 +83,9 @@ function argparser()
         help = "Text column in table"
         arg_type = Symbol
         default = :speech
+        "--search-string", "-S"
+        help = "A search string for use with document vector"
+        default = "freedom"
     end
     return s
 end
@@ -140,13 +146,16 @@ function julia_main()::Cint
         @info "Loading postings table:" args[:postings]
         load_table(CONN[], postings, args[:postings], column_defs=[
             "doc_id TEXT NOT NULL",
-            "term TEXT NOT NULL REFERENCES $(args[:dictionary]) ON DELETE RESTRICT",
+            "term TEXT NOT NULL REFERENCES $(args[:dictionary]) ON DELETE CASCADE",
             "termfreq INTEGER NOT NULL",
             "tf DOUBLE PRECISION NOT NULL",
             "tfidf DOUBLE PRECISION NOT NULL",
             "PRIMARY KEY (doc_id, term)"
         ])
         @info "Successfully loaded postings table"
+
+        @info "Building document vector"
+        dvec = build_document_vector(dictionary, postings)
     catch e
         ex = stacktrace(catch_backtrace())
         @error "Exception:" e, ex
