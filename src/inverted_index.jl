@@ -163,7 +163,7 @@ julia> tf(term, document)
 0.3
 ```
 """
-function tf(term::String, document::String; fn=relative_freq)::Float64
+function tf(term, document; fn=relative_freq)::Float64
     term_freq = split(document) |> counter
     if !haskey(term_freq, term)
         return 0.0

@@ -10,7 +10,7 @@ using LibPQ
 include("db.jl")
 include("inverted_index.jl")
 
-export build_inverted_index, build_dictionary_table, build_postings_table, connect, get_table
+export build_inverted_index, build_dictionary_table, build_postings_table, connect, get_table, julia_main
 
 #= CLI =#
 
