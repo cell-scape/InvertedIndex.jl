@@ -56,7 +56,7 @@ function build_inverted_index(df; id_col1=:president, id_col2=:date, text_col=:s
     sort!(postings_table, :doc_id) |> unique!
 
     @info "Add TF-IDF column to postings table"
-    dd = Dict(row.term => row.idf for row in eachrow(dictionary))
+    dd = Dict(row.term => row.idf for row in eachrow(dictionary_table))
     postings_table[!, :tfidf] = [dd[row.term] * row.tf for row in eachrow(postings_table)]
     @info size(postings_table)
 
