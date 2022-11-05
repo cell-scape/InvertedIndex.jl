@@ -86,8 +86,8 @@ function load_table(conn, df, table; column_defs=nothing)
     end
     _ = create_table(conn, table, column_defs)
     dropmissing!(df) # just in case
-    row_strings = IOBuffer(join([string(join(collect(row), ','), "\n") for row in eachrow(df)]))
-    copyin = LibPQ.CopyIn("COPY $table FROM STDIN (FORMAT CSV);", row_strings.data)
+    row_strings = [string(join(collect(row), ','), "\n") for row in eachrow(df)]
+    copyin = LibPQ.CopyIn("COPY $table FROM STDIN (FORMAT CSV);", row_strings)
     LibPQ.execute(conn, copyin)
 end
 
