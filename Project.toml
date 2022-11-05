@@ -4,6 +4,7 @@ authors = ["Bradley Dowling <brad.dowling@protonmail.com> and contributors"]
 version = "0.1.0"
 
 [deps]
+ArgParse = "c7e460c6-2fb9-53a9-8c5b-16f535851c63"
 DBInterface = "a10d1c49-ce27-4219-8d33-6db1a4562965"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
