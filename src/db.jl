@@ -1,3 +1,5 @@
+const CONN = Ref{LibPQ.Connection}()
+
 """
     connect(user::String, pass::String, host::String, port::Int, dbname::String)
 

@@ -107,11 +107,11 @@ function julia_main()::Cint
     args = parse_args(ARGS, ap, as_symbols=true)
     try
         @info "Connecting to database"
-        conn = connect(args[:user], args[:pass], args[:host], args[:port], args[:db])
+        CONN[] = connect(args[:user], args[:pass], args[:host], args[:port], args[:db])
         @info conn
 
         @info "Retrieving table from database"
-        df = get_table(conn, args[:table]; columns=split(args[:columns], ','))
+        df = get_table(CONN[], args[:table]; columns=split(args[:columns], ','))
         @info size(df)
 
         @info "Building inverted index"
@@ -127,19 +127,19 @@ function julia_main()::Cint
         @info "Loading inverted index into database"
 
         @info "Loading dictionary table:" args[:dictionary]
-        load_table(conn, args[:dictionary], dictionary)
+        load_table(CONN[], args[:dictionary], dictionary)
         @info "Successfully loaded dictionary table"
 
         @info "Loading postings table:" args[:postings]
-        load_table(conn, args[:postings], postings)
+        load_table(CONN[], args[:postings], postings)
         @info "Successfully loaded postings table"
     catch e
         ex = stacktrace(catch_backtrace())
         @error "Exception:" e, ex
     finally
         @info "Closing database connection"
-        close(conn)
-        @info conn
+        close(CONN[])
+        @info CONN[]
     end
     @info "Good bye"
     return 0
