@@ -15,13 +15,12 @@ include("inverted_index.jl")
 include("document_vector.jl")
 
 export build_inverted_index, build_dictionary_table, build_postings_table, connect, get_table, julia_main, CONN
-export build_document_vector, cosine_similarity, sanitize_text
+export build_document_vector, cosine_similarity, sanitize_text, sanitize_string
 
 #= PyCall =#
 
 function __init__()
     py"""
-    from string import ascii_letters, whitespace
     from nltk.corpus import stopwords
     from nltk.stem import PorterStemmer
     from nltk.tokenize import word_tokenize
@@ -29,16 +28,15 @@ function __init__()
 
     def sanitize_text(text: str) -> list[str]:
         '''
-        Removes english stop words, numbers, punctuation, etc. from a string using nltk.
+        Removes english stop words and suffixes from a string using nltk.
         May require nltk.download('stopwords') and nltk.download('punkt').
 
         Parameters:
         text (str): A string
 
         Returns:
-        list[str]: A list of strings with stop words, numbers, punctuation, etc. removed, all words stemmed
+        list[str]: A list of word stems with stop words removed
         '''
-        text = "".join(filter(lambda ch: ch in ascii_letters + whitespace, text)).strip().lower()
         stemmer = PorterStemmer()
         stop_words = set(stopwords.words('english'))
         words = list(filter(lambda word: word not in stop_words, word_tokenize(text)))
@@ -199,9 +197,12 @@ function julia_main()::Cint
 
         @info "Building document vector"
         dvec = build_document_vector(postings)
-
+        @info dvec
         if !isempty(args[:search_string])
-
+            @info "Search string" args[:search_string]
+            q = replace
+            sanitize_text(args[:search_string])
+            query()
         end
     catch e
         ex = stacktrace(catch_backtrace())

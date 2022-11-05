@@ -37,7 +37,6 @@ function build_inverted_index(df; id_col1=:president, id_col2=:date, text_col=:s
     documents = replace.(ch -> (isascii(first(ch)) && isletter(first(ch))) ? ch : " ", split.(lowercase.(df[!, text_col]), "")) .|> join
     @info "sanitize documents" length(documents)
 
-
     coll_freq = join(documents, ' ') |> sanitize_text |> counter
     @info "Collection Frequency" length(coll_freq)
 
@@ -168,7 +167,7 @@ function document_frequency(terms, documents)::Dict{String,Int}
     return doc_freq
 end
 
-
+#= TF =#
 
 """
     tf(term::String, document::String; fn=Function)::Float64
@@ -195,8 +194,6 @@ julia> tf(term, document)
 tf(term, term_freq; fn=relative_freq)::Float64 = fn(term, term_freq)
 
 
-#= Different tf methods =#
-
 augmented(term, term_freq)::Float64 = 0.5 + 0.5 * term_freq[term] / maximum(values(term_freq))
 log_scaled(term, term_freq)::Float64 = log10(1.0 + term_freq[term])
 boolean_freq(term, term_freq)::Float64 = iszero(term_freq[term]) ? 0.0 : 1.0
@@ -210,6 +207,8 @@ const TF_METHODS = Dict{String,Function}(
     "raw_count" => raw_count,
     "relative_freq" => relative_freq,
 )
+
+#= IDF =#
 
 """
     idf(terms::Vector{String}, doc_freq::Dict{String, Int}, ndocs::Int; fn::Function)::Float64
@@ -235,8 +234,6 @@ julia> idf(term, doc_freq, ndocs)
 """
 idf(term, doc_freq, ndocs; fn=inv_doc_freq_smooth)::Float64 = fn(term, doc_freq, ndocs)
 
-#= Different idf methods =#
-
 unary(term, doc_freq, ndocs)::Float64 = iszero(doc_freq[term]) ? 0.0 : 1.0
 inv_doc_freq(term, doc_freq, ndocs)::Float64 = log10(ndocs / doc_freq[term])
 inv_doc_freq_smooth(term, doc_freq, ndocs)::Float64 = log10(ndocs / (1.0 + doc_freq[term])) + 1.0
@@ -251,6 +248,7 @@ const IDF_METHODS = Dict{String,Function}(
     "probabilistic_inv_doc_freq" => probabilistic_inv_doc_freq,
 )
 
+#= String Cleaning =#
 
 """
     sanitize_text(text::String)::Vector{String}
@@ -269,3 +267,23 @@ julia> sanitize_text("all the stop words have been removed from this string")
 ```
 """
 sanitize_text(text) = py"sanitize_text"(text)
+
+
+"""
+    sanitize_string(s::String)::String
+
+Lowercases and replaces nonalphabetical chars with spaces.
+
+# Arguments
+- `s::String`: Input string
+
+# Returns
+- `::String`: Output string, no numbers, punctuation, or non-ascii letters, replaced with single whitespace
+
+# Examples
+```julia-repl
+julia> sanitize_string("Hello, world! 354;")
+"hello world"
+```
+"""
+sanitize_string(s) = replace(ch -> (isascii(first(ch)) && isletter(first(ch))) ? ch : " ", split(lowercase(s), "")) |> join |> strip
