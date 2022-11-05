@@ -139,6 +139,12 @@ function julia_main()::Cint
 
         @info "Loading postings table:" args[:postings]
         load_table(CONN[], postings, args[:postings], column_defs=[
+            "doc_id TEXT NOT NULL",
+            "term TEXT NOT NULL REFERENCES $(args[:dictionary]) ON DELETE RESTRICT",
+            "termfreq INTEGER NOT NULL",
+            "tf DOUBLE PRECISION NOT NULL",
+            "tfidf DOUBLE PRECISION NOT NULL",
+            "PRIMARY KEY (doc_id, term)"
         ])
         @info "Successfully loaded postings table"
     catch e

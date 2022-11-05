@@ -124,7 +124,8 @@ julia> create_table(conn, table, columns)
 """
 function create_table(conn, table, columns)
     q = """
-        CREATE TABLE IF NOT EXISTS $(table)(
+        DROP TABLE IF EXISTS $(table);
+        CREATE TABLE $(table)(
             $(join(columns, ",\n"))
         );
     """
