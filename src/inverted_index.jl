@@ -58,7 +58,7 @@ NxM DataFrame
 ```
 """
 function build_postings_table(doc_ids, terms, documents; tf_method=relative_freq)::DataFrame
-    postings = Dict(:term => String[], :doc_id => String[], termfreq => Float64[])
+    postings = Dict(:term => String[], :doc_id => String[], :termfreq => Float64[])
     for term in terms
         for (doc_id, document) in zip(doc_ids, documents)
             push!(postings[:term], term)
