@@ -62,11 +62,11 @@ function argparser()
         "--columns", "-c"
         help = "Columns to select from database (comma separated list)"
         default = "*"
-        "--idcol1", "-1"
+        "--idcol1"
         help = "ID column 1 for unique record key in inverted index (need both)"
         arg_type = Symbol
         default = :president
-        "--idcol2", "-2"
+        "--idcol2"
         help = "ID column 2 for unique record key in inverted index (need both)"
         arg_type = Symbol
         default = :date

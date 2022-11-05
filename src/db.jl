@@ -22,28 +22,30 @@ PostgreSQL connection (CONNECTION_OK) with parameters:
 [...]
 ```
 """
-connect(user::String, pass::String, host::String, port::Int, dbname::String) = LibPQ.Connection("dbname=$dbname user=$user password=$pass port=$port host=$host")
+connect(user, pass, host, port, dbname) = LibPQ.Connection("dbname=$dbname user=$user password=$pass port=$port host=$host")
 
 """
-    get_table(conn::LibPQ.Connection, table::String, columns=["*"])::DataFrame
+    get_table(conn::LibPQ.Connection, table::String; columns::Vector{String}=["*"])::DataFrame
 
 Retrieve an entire table from database and return as a DataFrame.
 
 # Arguments
 - `conn::LibPQ.Connection`: Database connection handle
 - `table::String`: Table name
-- `columns::Vector{String}`: A sequence of column names
+
+# Keywords
+- `columns::Vector{String}`: A sequence of column names (default: ["*"])
 
 # Returns
 - `::DataFrame`: Database table as a DataFrame object
 
 # Examples
 ```julia-repl
-julia> df = get_table(conn, "stateofunion", ["president", "date", "speech"])
+julia> df = get_table(conn, "stateofunion", columns=["president", "date", "speech"])
 NxM DataFrame [...]
 ```
 """
-function get_table(conn, table::String, columns::Vector{String}=["*"])
+function get_table(conn, table; columns=["*"])
     columns = length(columns) > 1 ? join(columns, ",") : first(columns)
     q = """
         SELECT $columns from $table;
