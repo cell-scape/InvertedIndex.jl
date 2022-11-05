@@ -19,21 +19,7 @@ julia> conn = connect("postgres", "postgres", "localhost", 5432, "postgres")
 
 PostgreSQL connection (CONNECTION_OK) with parameters:
   user = postgres
-  password = ********************
-  channel_binding = prefer
-  dbname = postgres
-  host = /var/run/postgresql
-  port = 5432
-  client_encoding = UTF8
-  options = -c DateStyle=ISO,YMD -c IntervalStyle=iso_8601 -c TimeZone=UTC
-  application_name = LibPQ.jl
-  sslmode = prefer
-  sslcompression = 0
-  sslsni = 1
-  ssl_min_protocol_version = TLSv1.2
-  gssencmode = prefer
-  krbsrvname = postgres
-  target_session_attrs = any
+[...]
 ```
 """
 connect(user::String, pass::String, host::String, port::Int, dbname::String) = LibPQ.Connection("dbname=$dbname user=$user password=$pass port=$port host=$host")
