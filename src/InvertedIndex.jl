@@ -25,11 +25,13 @@ function __init__()
     from nltk.corpus import stopwords
 
     def remove_stopwords(text: str) -> list:
-        words = word_tokenize(text)
+        words = word_tokenize(text.lower().strip())
         stop_words = set(stopwords.words('english'))
-        return list(filter(lambda w: w not in stop_words, words.lowercase().strip().split()))
+        return list(filter(lambda w: w not in stop_words, words))
     """
 end
+
+remove_stopwords(text) = py"remove_stopwords"(text)
 
 #= CLI =#
 
