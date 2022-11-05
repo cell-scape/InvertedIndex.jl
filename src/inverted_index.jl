@@ -192,12 +192,8 @@ julia> tf(term, document)
 0.3
 ```
 """
-function tf(term, term_freq; fn=relative_freq)::Float64
-    if !haskey(term_freq, term)
-        return 0.0
-    end
-    return fn(term, term_freq)
-end
+tf(term, term_freq; fn=relative_freq)::Float64 = fn(term, term_freq)
+
 
 #= Different tf methods =#
 

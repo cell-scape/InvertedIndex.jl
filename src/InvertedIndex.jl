@@ -17,6 +17,20 @@ include("document_vector.jl")
 export build_inverted_index, build_dictionary_table, build_postings_table, connect, get_table, julia_main, CONN
 export build_document_vector, cosine_similarity
 
+#= PyCall =#
+
+function __init__()
+    py"""
+    from nltk.tokenize import word_tokenize
+    from nltk.corpus import stopwords
+
+    def remove_stopwords(text: str) -> list:
+        words = word_tokenize(text)
+        stop_words = set(stopwords.words('english'))
+        return list(filter(lambda w: w not in stop_words, words.lowercase().strip().split()))
+    """
+end
+
 #= CLI =#
 
 """
