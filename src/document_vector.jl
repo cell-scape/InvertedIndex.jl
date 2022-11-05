@@ -19,5 +19,5 @@ julia> A = build_document_vector(dictionary, postings)
 function build_document_vector(postings)
     terms = unique(postings.term)
     documents = unique(postings.doc_id)
-    A = Matrix{Float64}((length(terms), length(documents)), undef)
+    A = zeros((length(terms), length(documents)))
 end

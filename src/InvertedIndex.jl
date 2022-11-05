@@ -5,6 +5,7 @@ using DataFrames
 using DataFramesMeta
 using DataStructures: counter, Accumulator
 using Dates
+using DimensionalData
 using LibPQ
 using LinearAlgebra
 
