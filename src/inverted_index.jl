@@ -171,6 +171,13 @@ boolean_freq(term, term_freq)::Float64 = iszero(term_freq[term]) ? 0.0 : 1.0
 raw_count(term, term_freq)::Float64 = term_freq[term]
 relative_freq(term, term_freq)::Float64 = term_freq[term] / (sum(values(term_freq)) - term_freq[term])
 
+const TF_METHODS = Dict{String,Function}(
+    "augmented" => augmented,
+    "log_scaled" => log_scaled,
+    "boolean_freq" => boolean_freq,
+    "raw_count" => raw_count,
+    "relative_freq" => relative_freq,
+)
 
 """
     idf(terms::Vector{String}, doc_freq::Dict{String, Int}, ndocs::Int; fn::Function)::Float64
@@ -203,3 +210,11 @@ inv_doc_freq(term, doc_freq, ndocs)::Float64 = log10(ndocs / doc_freq[term])
 inv_doc_freq_smooth(term, doc_freq, ndocs)::Float64 = log10(ndocs / (1.0 + doc_freq[term])) + 1.0
 inv_doc_freq_max(term, doc_freq, ndocs)::Float64 = log10(maximum(values(doc_freq)) / (1.0 + doc_freq[term]))
 probabilistic_inv_doc_freq(term, doc_freq, ndocs)::Float64 = log10((ndocs - doc_freq[term]) / doc_freq[term])
+
+const IDF_METHODS = Dict{String,Function}(
+    "unary" => unary,
+    "inv_doc_freq" => inv_doc_freq,
+    "inv_doc_freq_smooth" => inv_doc_freq_smooth,
+    "inv_doc_freq_max" => inv_doc_freq_max,
+    "probabilistic_inv_doc_freq" => probabilistic_inv_doc_freq,
+)
