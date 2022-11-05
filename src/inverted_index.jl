@@ -25,40 +25,34 @@ julia> dictionary, posting = build_inverted_index(df)
 ```
 """
 function build_inverted_index(df; id_col1=:president, id_col2=:date, text_col=:speech, tf_method=relative_freq, idf_method=inv_doc_freq_smooth)::NTuple{2,DataFrame}
-    @info size(df)
+    @info "initial df size" size(df)
     dropmissing!(df, [id_col1, id_col2, text_col])
     @info "Dropped missings: " size(df)
+
     isempty(df) && return df
 
-    @info "Get doc_ids"
     doc_ids = string.(df[!, id_col1], "_", df[!, id_col2])
-    @info length(doc_ids)
+    @info "doc_ids" length(doc_ids)
 
-    @info "sanitize documents"
     documents = replace.(ch -> (isascii(first(ch)) && isletter(first(ch))) ? ch : " ", split.(lowercase.(df[!, text_col]), "")) .|> join
-    @info length(documents)
+    @info "sanitize documents" length(documents)
 
-    @info "Collection Frequency"
+
     coll_freq = join(documents, ' ') |> split |> counter
-    @info length(coll_freq)
+    @info "Collection Frequency" length(coll_freq)
 
-    @info "Unique terms"
     terms = collect(keys(coll_freq))
-    @info length(terms)
+    @info "Unique terms" length(terms)
 
-    @info "build dictionary table"
     dictionary_table = build_dictionary_table(coll_freq, terms, documents; idf_method=idf_method)
-    sort!(dictionary_table, :term) |> unique!
-    @info size(dictionary_table)
+    sort!(unique!(dictionary_table, :term), :term)
+    @info "dictionary table" size(dictionary_table)
 
-    @info "build postings table"
     postings_table = build_postings_table(doc_ids, documents; tf_method=tf_method)
-    sort!(postings_table, :doc_id) |> unique!
-
-    @info "Add TF-IDF column to postings table"
+    sort!(unique!(postings_table, [:doc_id, :term]), :doc_id)
     dd = Dict(row.term => row.idf for row in eachrow(dictionary_table))
     postings_table[!, :tfidf] = [dd[row.term] * row.tf for row in eachrow(postings_table)]
-    @info size(postings_table)
+    @info "postings table" size(postings_table)
 
     dictionary_table, postings_table
 end
