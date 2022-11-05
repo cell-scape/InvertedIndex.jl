@@ -3,7 +3,7 @@ module InvertedIndex
 using ArgParse
 using DataFrames
 using DataFramesMeta
-using DataStructures: counter
+using DataStructures: counter, Accumulator
 using Dates
 using LibPQ
 

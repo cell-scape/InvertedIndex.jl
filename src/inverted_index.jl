@@ -1,3 +1,5 @@
+const TERM_FREQUENCIES = Ref(Dict{AbstractString,Accumulator}())
+
 """
     build_inverted_index(df; id_col1::Symbol, id_col2::Symbol, text_col::Symbol, tf_method::Function, idf_method::Function)::NTuple{2, DataFrame}
 
@@ -49,6 +51,8 @@ function build_inverted_index(df; id_col1=:president, id_col2=:date, text_col=:s
     @info size(dictionary_table)
 
     @info "build postings table"
+    empty!(TERM_FREQUENCIES[])
+    @info "clear tf memo" TERM_FREQUENCIES[]
     postings_table = build_postings_table(doc_ids, terms, documents; tf_method=tf_method)
     @info size(postings_table)
 
@@ -79,12 +83,24 @@ NxM DataFrame
 ```
 """
 function build_postings_table(doc_ids, terms, documents; tf_method=relative_freq)::DataFrame
-    postings = Dict(:term => String[], :doc_id => String[], :termfreq => Float64[])
-    for term in terms
-        for (doc_id, document) in zip(doc_ids, documents)
+    postings = Dict(:term => String[], :doc_id => String[], :termfreq => Int64[], :tf => Float64[])
+    for (i, term) in enumerate(terms)
+        if i % 500 == 0
+            @info i term
+        end
+        for (j, (doc_id, document)) in enumerate(zip(doc_ids, documents))
+            if j % 10
+                @info i j doc_id
+            end
+            if !haskey(TERM_FREQUENCIES[], doc_id)
+                @info "Memoizing for doc_id" doc_id
+                TERM_FREQUENCIES[][doc_id] = split(document) |> counter
+            end
+            term_freq = TERM_FREQUENCIES[][doc_id]
             push!(postings[:term], term)
             push!(postings[:doc_id], doc_id)
-            push!(postings[:termfreq], tf(term, document; fn=tf_method))
+            push!(postings[:termfreq], term_freq[term])
+            push!(postings[:tf], tf(term, term_freq; fn=tf_method))
         end
     end
     return DataFrame(postings)
@@ -184,8 +200,7 @@ julia> tf(term, document)
 0.3
 ```
 """
-function tf(term, document; fn=relative_freq)::Float64
-    term_freq = split(document) |> counter
+function tf(term, term_freq; fn=relative_freq)::Float64
     if !haskey(term_freq, term)
         return 0.0
     end
