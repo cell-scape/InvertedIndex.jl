@@ -15,7 +15,7 @@ include("inverted_index.jl")
 include("document_vector.jl")
 
 export build_inverted_index, build_dictionary_table, build_postings_table, connect, get_table, julia_main, CONN
-export build_document_vector, cosine_similarity
+export build_document_vector, cosine_similarity, remove_stopwords
 
 #= PyCall =#
 
@@ -25,6 +25,15 @@ function __init__()
     from nltk.corpus import stopwords
 
     def remove_stopwords(text: str) -> list:
+        '''
+        Removes english stopwords from a string and returns a list of strings.
+
+        Parameters:
+        text (str): A string
+
+        Returns:
+        list[str]: A list of words
+        '''
         words = word_tokenize(text.lower().strip())
         stop_words = set(stopwords.words('english'))
         return list(filter(lambda w: w not in stop_words, words))
