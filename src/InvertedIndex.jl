@@ -61,7 +61,6 @@ function argparser()
         default = "relative_freq"
         "--columns", "-c"
         help = "Columns to select from database (comma separated list)"
-        nargs = "+"
         default = "*"
         "--idcol1", "-1"
         help = "ID column 1 for unique record key in inverted index (need both)"
