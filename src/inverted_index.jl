@@ -250,3 +250,22 @@ const IDF_METHODS = Dict{String,Function}(
     "inv_doc_freq_max" => inv_doc_freq_max,
     "probabilistic_inv_doc_freq" => probabilistic_inv_doc_freq,
 )
+
+"""
+    remove_stopwords(text::String)::String
+
+Removes stopwords from a string using NLTK and PyCall.
+
+# Arguments
+- `text::String`: A string
+
+# Returns
+- `::String`: A string with stopwords removed
+
+# Examples
+```julia-repl
+julia> remove_stopwords("all the stop words have been removed from this string")
+"stop words removed string"
+```
+"""
+remove_stopwords(text) = py"remove_stopwords"(text)

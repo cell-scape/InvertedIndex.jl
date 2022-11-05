@@ -24,23 +24,22 @@ function __init__()
     from nltk.tokenize import word_tokenize
     from nltk.corpus import stopwords
 
-    def remove_stopwords(text: str) -> list:
+    def remove_stopwords(text: str) -> str:
         '''
-        Removes english stopwords from a string and returns a list of strings.
+        Removes english stop words from a string using nltk. 
+        May require nltk.download('stopwords') and nltk.download('punkt').
 
         Parameters:
         text (str): A string
 
         Returns:
-        list[str]: A list of words
+        str: A string with stop words removed
         '''
         words = word_tokenize(text.lower().strip())
         stop_words = set(stopwords.words('english'))
-        return list(filter(lambda w: w not in stop_words, words))
+        return " ".join(list(filter(lambda w: w not in stop_words, words)))
     """
 end
-
-remove_stopwords(text) = py"remove_stopwords"(text)
 
 #= CLI =#
 
