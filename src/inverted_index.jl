@@ -35,7 +35,7 @@ function build_inverted_index(df; id_col1=:president, id_col2=:date, text_col=:s
     @info length(doc_ids)
 
     @info "sanitize documents"
-    documents = replace.(ch -> ispunct(first(ch)) || iscntrl(first(ch)) ? " " : ch, split.(lowercase.(df[!, text_col]), "")) .|> join
+    documents = replace.(ch -> (isascii(first(ch)) && isletter(first(ch))) ? ch : " ", split.(lowercase.(df[!, text_col]), "")) .|> join
     @info length(documents)
 
     @info "Collection Frequency"
@@ -48,10 +48,16 @@ function build_inverted_index(df; id_col1=:president, id_col2=:date, text_col=:s
 
     @info "build dictionary table"
     dictionary_table = build_dictionary_table(coll_freq, terms, documents; idf_method=idf_method)
+    sort!(dictionary_table, :term) |> unique!
     @info size(dictionary_table)
 
     @info "build postings table"
-    postings_table = build_postings_table(doc_ids, terms, documents; tf_method=tf_method)
+    postings_table = build_postings_table(doc_ids, documents; tf_method=tf_method)
+    sort!(postings_table, :doc_id) |> unique!
+
+    @info "Add TF-IDF column to postings table"
+    dd = Dict(row.term => row.idf for row in eachrow(dictionary))
+    postings_table[!, :tfidf] = [dd[row.term] * row.tf for row in eachrow(postings_table)]
     @info size(postings_table)
 
     dictionary_table, postings_table
@@ -81,18 +87,17 @@ NxM DataFrame
 [...]
 ```
 """
-function build_postings_table(doc_ids, terms, documents; tf_method=relative_freq)::DataFrame
+function build_postings_table(doc_ids, documents; tf_method=relative_freq)::DataFrame
     postings = Dict(:term => String[], :doc_id => String[], :termfreq => Int64[], :tf => Float64[])
-    for term in terms
-        for (doc_id, document) in zip(doc_ids, documents)
-            if !haskey(TERM_FREQUENCIES[], doc_id)
-                @info "Memoizing for doc_id" doc_id
-                TERM_FREQUENCIES[][doc_id] = split(document) |> counter
-            end
-            term_freq = TERM_FREQUENCIES[][doc_id]
+    for (doc_id, document) in zip(doc_ids, documents)
+        if !haskey(TERM_FREQUENCIES[], doc_id)
+            TERM_FREQUENCIES[][doc_id] = split(document) |> counter
+        end
+        term_freq = TERM_FREQUENCIES[][doc_id]
+        for (term, freq) in term_freq
             push!(postings[:term], term)
             push!(postings[:doc_id], doc_id)
-            push!(postings[:termfreq], term_freq[term])
+            push!(postings[:termfreq], freq)
             push!(postings[:tf], tf(term, term_freq; fn=tf_method))
         end
     end

@@ -129,11 +129,17 @@ function julia_main()::Cint
         @info "Loading inverted index into database"
 
         @info "Loading dictionary table:" args[:dictionary]
-        load_table(CONN[], args[:dictionary], dictionary)
+        load_table(CONN[], dictionary, args[:dictionary], column_defs=[
+            "collectionfreq INT NOT NULL",
+            "docfreq INT NOT NULL",
+            "idf DOUBLE PRECISION NOT NULL",
+            "term TEXT PRIMARY KEY NOT NULL"
+        ])
         @info "Successfully loaded dictionary table"
 
         @info "Loading postings table:" args[:postings]
-        load_table(CONN[], args[:postings], postings)
+        load_table(CONN[], postings, args[:postings], column_defs=[
+        ])
         @info "Successfully loaded postings table"
     catch e
         ex = stacktrace(catch_backtrace())
