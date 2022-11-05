@@ -32,19 +32,19 @@ function build_inverted_index(df; id_col1=:president, id_col2=:date, text_col=:s
 
     @info "Get doc_ids"
     doc_ids = string.(df[!, id_col1], "_", df[!, id_col2])
-    @info doc_ids
+    @info length(doc_ids)
 
     @info "sanitize documents"
     documents = replace.(ch -> ispunct(first(ch)) || iscntrl(first(ch)) ? " " : ch, split.(lowercase.(df[!, text_col]), "")) .|> join
-    @info documents
+    @info length(documents)
 
     @info "Collection Frequency"
     coll_freq = join(documents, ' ') |> split |> counter
-    @info coll_freq
+    @info length(coll_freq)
 
     @info "Unique terms"
     terms = collect(keys(coll_freq))
-    @info terms
+    @info length(terms)
 
     @info "build dictionary table"
     dictionary_table = build_dictionary_table(coll_freq, terms, documents; idf_method=idf_method)
@@ -89,7 +89,7 @@ function build_postings_table(doc_ids, terms, documents; tf_method=relative_freq
             @info i term
         end
         for (j, (doc_id, document)) in enumerate(zip(doc_ids, documents))
-            if j % 10
+            if j % 10 == 0
                 @info i j doc_id
             end
             if !haskey(TERM_FREQUENCIES[], doc_id)
