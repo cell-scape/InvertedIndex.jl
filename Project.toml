@@ -3,6 +3,13 @@ uuid = "acd61c57-c66d-47b5-a9d9-dc832b2e6846"
 authors = ["Bradley Dowling <brad.dowling@protonmail.com> and contributors"]
 version = "0.1.0"
 
+[deps]
+DBInterface = "a10d1c49-ce27-4219-8d33-6db1a4562965"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+LibPQ = "194296ae-ab2e-5f79-8cd4-7183a0a5a0d1"
+
 [compat]
 julia = "1"
 
