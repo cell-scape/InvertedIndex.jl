@@ -200,9 +200,8 @@ function julia_main()::Cint
         @info dvec
         if !isempty(args[:search_string])
             @info "Search string" args[:search_string]
-            q = replace
-            sanitize_text(args[:search_string])
-            query()
+            keywords = sanitize_string(args[:search_string]) |> sanitize_text
+            result = query(keywords, dvec)
         end
     catch e
         ex = stacktrace(catch_backtrace())

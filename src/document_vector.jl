@@ -59,8 +59,25 @@ julia> query(["freedom", "speech"])
 """
 function query(keywords, dvec)::String
     isempty(keywords) && return ""
-    if typeof(keywords) == String
-        keywords = [keywords]
+
+    terms, docs = dvec.dims
+    term_freq = Dict(term => 0 for term in terms)
+    for keyword in keywords
+        if haskey(terms, keyword)
+            term_freq[keyword] += 1
+        end
     end
-    doc_vecs = [filter(>(0.0), dvec[X(), Y(At(kw))]) for kw in keywords]
+
+    best_sim = 0.0
+    best_match = ""
+    for doc in docs
+        sim = cosine_similarity(terms, dvec[X(), Y(At(doc))])
+        if sim > best_match
+            best_sim = sim
+            best_match = doc
+        end
+    end
+    return best_match, best_sim
 end
+
+
