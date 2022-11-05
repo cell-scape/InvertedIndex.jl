@@ -37,6 +37,12 @@ function argparser()
         "--table", "-t"
         help = "Database table name"
         default = "stateofunion"
+        "--dictionary", "-D"
+        help = "Dictionary table name"
+        default = "sou_dictionary"
+        "--postings"
+        help = "Postings table name"
+        default = "sou_postings"
         "--user", "-u"
         help = "Database username"
         default = "postgres"
@@ -117,14 +123,25 @@ function julia_main()::Cint
             tf_method=TF_METHODS[args[:tf]],
             idf_method=IDF_METHODS[args[:idf]]
         )
-        @info "Dictionary" size(dictionary)
-        @info "Posting" size(postings)
+        @info "Successfully build inverted index tables"
+        @info "Loading inverted index into database"
 
+        @info "Loading dictionary table:" args[:dictionary]
+        load_table(conn, args[:dictionary], dictionary)
+        @info "Successfully loaded dictionary table"
+
+        @info "Loading postings table:" args[:postings]
+        load_table(conn, args[:postings], postings)
+        @info "Successfully loaded postings table"
     catch e
         ex = stacktrace(catch_backtrace())
         @error "Exception:" e, ex
-        return -1
+    finally
+        @info "Closing database connection"
+        close(conn)
+        @info conn
     end
+    @info "Good bye"
     return 0
 end
 

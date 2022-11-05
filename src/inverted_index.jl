@@ -23,14 +23,35 @@ julia> dictionary, posting = build_inverted_index(df)
 ```
 """
 function build_inverted_index(df; id_col1=:president, id_col2=:date, text_col=:speech, tf_method=relative_freq, idf_method=inv_doc_freq_smooth)::NTuple{2,DataFrame}
+    @info size(df)
     dropmissing!(df, [id_col1, id_col2, text_col])
+    @info "Drop missings: " size(df)
     isempty(df) && return df
+
+    @info "Get doc_ids"
     doc_ids = string.(df[!, id_col1], "_", df[!, id_col2])
+    @info doc_ids
+
+    @info "sanitize documents"
     documents = replace.(ch -> ispunct(first(ch)) || iscntrl(first(ch)) ? " " : ch, split.(lowercase.(df[!, text_col]), "")) .|> join
+    @info documents
+
+    @info "Collection Frequency"
     coll_freq = join(documents, ' ') |> split |> counter
+    @info coll_freq
+
+    @info "Unique terms"
     terms = collect(keys(coll_freq))
+    @info terms
+
+    @info "build dictionary table"
     dictionary_table = build_dictionary_table(coll_freq, terms, documents; idf_method=idf_method)
+    @info size(dictionary_table)
+
+    @info "build postings table"
     postings_table = build_postings_table(doc_ids, terms, documents; tf_method=tf_method)
+    @info size(postings_table)
+
     return (dictionary_table, postings_table)
 end
 
