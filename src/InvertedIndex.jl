@@ -105,12 +105,12 @@ function julia_main()::Cint
         @info conn
 
         @info "Retrieving table from database"
-        df = get_table(conn, args[:table], split(args[:columns], ','))
+        df = get_table(conn, args[:table]; columns=split(args[:columns], ','))
         @info size(df)
 
         @info "Building inverted index"
         dictionary, postings = build_inverted_index(
-            df,
+            df;
             id_col1=args[:idcol1],
             id_col2=args[:idcol2],
             text_col=args[:text_col],
@@ -118,7 +118,7 @@ function julia_main()::Cint
             idf_method=IDF_METHODS[args[:idf]]
         )
         @info "Dictionary" size(dictionary)
-        @info "Posting" size(posting)
+        @info "Posting" size(postings)
 
     catch e
         ex = stacktrace(catch_backtrace())

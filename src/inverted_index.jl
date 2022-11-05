@@ -6,6 +6,13 @@ Builds 2 new dataframes as an inverted index using TF-IDF weighting
 # Arguments
 - `df::DataFrame`: DataFrame retrieved from Database
 
+# Keywords
+- `id_col1::Symbol`: First of two columns used for a unique key in the index tables (default: :president)
+- `id_col2::Symbol`: Second column used for unique key in index tables (default: :date)
+- `text_col::Symbol`: The column with the text data to build the index (default: speech)
+- `tf_method::Function`: tf method (default: relative_freq)
+- `idf_method::Function`: idf method (default: inv_doc_freq_smooth)
+
 # Returns
 - `::NTuple{2, DataFrame}`: Inverted index tables (dictionary and posting)
 
@@ -15,7 +22,7 @@ julia> dictionary, posting = build_inverted_index(df)
 (NxM DataFrame [...], NxM DataFrame [...])
 ```
 """
-function build_inverted_index(df::DataFrame; id_col1::Symbol=:president, id_col2::Symbol=:date, text_col::Symbol=:speech, tf_method=relative_freq, idf_method=inv_doc_freq_smooth)::NTuple{2,DataFrame}
+function build_inverted_index(df; id_col1=:president, id_col2=:date, text_col=:speech, tf_method=relative_freq, idf_method=inv_doc_freq_smooth)::NTuple{2,DataFrame}
     isempty(df) && return df
     doc_ids = string.(df[!, id_col1], "_", df[!, id_col2])
     documents = replace.(ch -> ispunct(first(ch)) || iscntrl(first(ch)) ? " " : ch, split.(lowercase.(df[!, text_col]), "")) .|> join
