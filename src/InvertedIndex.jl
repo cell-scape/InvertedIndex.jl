@@ -10,7 +10,7 @@ using LibPQ
 include("db.jl")
 include("inverted_index.jl")
 
-export build_inverted_index, build_dictionary_table, build_postings_table, connect, get_table, julia_main
+export build_inverted_index, build_dictionary_table, build_postings_table, connect, get_table, julia_main, CONN
 
 #= CLI =#
 
@@ -103,12 +103,14 @@ julia> julia_main()
 ```
 """
 function julia_main()::Cint
+    @info "Entrypoint: julia_main()"
     ap = argparser()
     args = parse_args(ARGS, ap, as_symbols=true)
+    @info "CLI args: " args
     try
         @info "Connecting to database"
         CONN[] = connect(args[:user], args[:pass], args[:host], args[:port], args[:db])
-        @info conn
+        @info CONN[]
 
         @info "Retrieving table from database"
         df = get_table(CONN[], args[:table]; columns=split(args[:columns], ','))
@@ -136,12 +138,13 @@ function julia_main()::Cint
     catch e
         ex = stacktrace(catch_backtrace())
         @error "Exception:" e, ex
+        return -1
     finally
         @info "Closing database connection"
         close(CONN[])
         @info CONN[]
     end
-    @info "Good bye"
+    @info "Success"
     return 0
 end
 

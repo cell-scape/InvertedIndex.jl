@@ -27,7 +27,7 @@ julia> dictionary, posting = build_inverted_index(df)
 function build_inverted_index(df; id_col1=:president, id_col2=:date, text_col=:speech, tf_method=relative_freq, idf_method=inv_doc_freq_smooth)::NTuple{2,DataFrame}
     @info size(df)
     dropmissing!(df, [id_col1, id_col2, text_col])
-    @info "Drop missings: " size(df)
+    @info "Dropped missings: " size(df)
     isempty(df) && return df
 
     @info "Get doc_ids"
@@ -51,13 +51,12 @@ function build_inverted_index(df; id_col1=:president, id_col2=:date, text_col=:s
     @info size(dictionary_table)
 
     @info "build postings table"
-    empty!(TERM_FREQUENCIES[])
-    @info "clear tf memo" TERM_FREQUENCIES[]
     postings_table = build_postings_table(doc_ids, terms, documents; tf_method=tf_method)
     @info size(postings_table)
 
-    return (dictionary_table, postings_table)
+    dictionary_table, postings_table
 end
+
 
 """
     build_postings_table(doc_ids, terms, documents; tf_method::Function)::DataFrame
@@ -84,14 +83,8 @@ NxM DataFrame
 """
 function build_postings_table(doc_ids, terms, documents; tf_method=relative_freq)::DataFrame
     postings = Dict(:term => String[], :doc_id => String[], :termfreq => Int64[], :tf => Float64[])
-    for (i, term) in enumerate(terms)
-        if i % 500 == 0
-            @info i term
-        end
-        for (j, (doc_id, document)) in enumerate(zip(doc_ids, documents))
-            if j % 10 == 0
-                @info i j doc_id
-            end
+    for term in terms
+        for (doc_id, document) in zip(doc_ids, documents)
             if !haskey(TERM_FREQUENCIES[], doc_id)
                 @info "Memoizing for doc_id" doc_id
                 TERM_FREQUENCIES[][doc_id] = split(document) |> counter

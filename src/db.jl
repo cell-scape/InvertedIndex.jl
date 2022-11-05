@@ -52,33 +52,39 @@ NxM DataFrame [...]
 function get_table(conn, table; columns=["*"])
     columns = length(columns) > 1 ? join(columns, ",") : first(columns)
     q = """
-        SELECT $columns from $table;
+        SELECT $(columns) from $(table);
     """
     LibPQ.execute(conn, q) |> DataFrame
 end
 
 
 """
-    load_table(conn::LibPQ.Connection, df::DataFrame)
+    load_table(conn::LibPQ.Connection, df::DataFrame, table::String; column_defs::Vector{String})
 
 Load a table into the database.
 
 # Arguments
 - `conn::LibPQ.Connection`: Database connection handle
-- `table::String`: Table name
 - `df::DataFrame`: Dataframe to load into DB
+- `table::String`: Table name
+
+# Keywords
+- `column_defs::Union{Nothing, Vector{String}}`: Column definitions (e.g. `ID INT PRIMARY KEY NOT NULL`)
 
 # Returns
 - `::Nothing`: nothing
 
 # Examples
 ```julia-repl
-julia> load_table(conn, df)
+julia> load_table(conn, df, table, columns)
 [...]
 ```
 """
-function load_table(conn, table, df)
-    _ = create_table(conn, table, names(df))
+function load_table(conn, df, table; column_defs=nothing)
+    if isnothing(column_defs)
+        column_defs = [string(name, " TEXT") for name in names]
+    end
+    _ = create_table(conn, table, column_defs)
     row_strings = map(eachrow(df)) do row
         rowstring = String[]
         for field in row
@@ -118,8 +124,8 @@ julia> create_table(conn, table, columns)
 """
 function create_table(conn, table, columns)
     q = """
-        CREATE TABLE IF NOT EXISTS $table (
-            $(join(columns, ','))
+        CREATE TABLE IF NOT EXISTS $(table)(
+            $(join(columns, ",\n"))
         );
     """
     LibPQ.execute(conn, q)
