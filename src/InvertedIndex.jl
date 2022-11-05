@@ -155,7 +155,7 @@ function julia_main()::Cint
         @info "Successfully loaded postings table"
 
         @info "Building document vector"
-        dvec = build_document_vector(dictionary, postings)
+        dvec = build_document_vector(postings)
     catch e
         ex = stacktrace(catch_backtrace())
         @error "Exception:" e, ex
