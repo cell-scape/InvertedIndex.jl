@@ -36,19 +36,15 @@ function argparser()
     @add_arg_table! s begin
         "--table", "-t"
         help = "Database table name"
-        arg_type = String
         default = "stateofunion"
         "--user", "-u"
         help = "Database username"
-        arg_type = String
         default = "postgres"
         "--pass", "-p"
         help = "Database password"
-        arg_type = String
         default = "postgres"
-        "--host", "-h"
+        "--host", "-H"
         help = "Database hostname"
-        arg_type = String
         default = "localhost"
         "--port", "-P"
         help = "Port number"
@@ -56,19 +52,15 @@ function argparser()
         default = 5432
         "--db", "-d"
         help = "Database name"
-        arg_type = String
         default = "postgres"
         "--idf", "-I"
         help = "idf function"
-        arg_type = String
         default = "inv_doc_freq_smooth"
         "--tf", "-T"
         help = "tf function"
-        arg_type = String
         default = "relative_freq"
         "--columns", "-c"
         help = "Columns to select from database (comma separated list)"
-        arg_type = String
         nargs = "+"
         default = "*"
         "--idcol1", "-1"
