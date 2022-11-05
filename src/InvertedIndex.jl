@@ -8,13 +8,14 @@ using Dates
 using DimensionalData
 using LibPQ
 using LinearAlgebra
+using PyCall
 
 include("db.jl")
 include("inverted_index.jl")
 include("document_vector.jl")
 
 export build_inverted_index, build_dictionary_table, build_postings_table, connect, get_table, julia_main, CONN
-export build_document_vector
+export build_document_vector, cosine_similarity
 
 #= CLI =#
 
@@ -38,6 +39,12 @@ julia> argparser()
 function argparser()
     s = ArgParse.ArgParseSettings(prog="Inverted Index", description="Creates an inverted index table in Database", epilog="---", autofix_names=true)
     @add_arg_table! s begin
+        "--load-idx-from-db", "-L"
+        help = "Load inverted index from database"
+        action = :store_true
+        "--upload-to-db", "-U"
+        help = "Upload inverted index tables to database"
+        action = :store_true
         "--table", "-t"
         help = "Database table name"
         default = "stateofunion"
@@ -119,44 +126,54 @@ function julia_main()::Cint
         CONN[] = connect(args[:user], args[:pass], args[:host], args[:port], args[:db])
         @info CONN[]
 
-        @info "Retrieving table from database"
-        df = get_table(CONN[], args[:table]; columns=split(args[:columns], ','))
-        @info size(df)
+        dictionary, postings = if args[:load_idx_from_db]
+            @info "Loading dictionary, postings from DB"
+            get_table(CONN[], args[:dictionary]), get_table(CONN[], args[:postings])
+        else
+            df = get_table(CONN[], args[:table]; columns=split(args[:columns], ','))
+            @info "Retrieved SOU table from database" size(df)
 
-        @info "Building inverted index"
-        dictionary, postings = build_inverted_index(
-            df;
-            id_col1=args[:idcol1],
-            id_col2=args[:idcol2],
-            text_col=args[:text_col],
-            tf_method=TF_METHODS[args[:tf]],
-            idf_method=IDF_METHODS[args[:idf]]
-        )
-        @info "Successfully build inverted index tables"
-        @info "Loading inverted index into database"
+            @info "Building inverted index"
+            build_inverted_index(
+                df;
+                id_col1=args[:idcol1],
+                id_col2=args[:idcol2],
+                text_col=args[:text_col],
+                tf_method=TF_METHODS[args[:tf]],
+                idf_method=IDF_METHODS[args[:idf]]
+            )
+        end
 
-        @info "Loading dictionary table:" args[:dictionary]
-        load_table(CONN[], dictionary, args[:dictionary], column_defs=[
-            "collectionfreq INT NOT NULL",
-            "docfreq INT NOT NULL",
-            "idf DOUBLE PRECISION NOT NULL",
-            "term TEXT PRIMARY KEY NOT NULL"
-        ])
-        @info "Successfully loaded dictionary table"
+        if args[:upload_to_db]
+            @info "Loading inverted index into database"
 
-        @info "Loading postings table:" args[:postings]
-        load_table(CONN[], postings, args[:postings], column_defs=[
-            "doc_id TEXT NOT NULL",
-            "term TEXT NOT NULL REFERENCES $(args[:dictionary]) ON DELETE CASCADE",
-            "termfreq INTEGER NOT NULL",
-            "tf DOUBLE PRECISION NOT NULL",
-            "tfidf DOUBLE PRECISION NOT NULL",
-            "PRIMARY KEY (doc_id, term)"
-        ])
-        @info "Successfully loaded postings table"
+            @info "Loading dictionary table:" args[:dictionary]
+            load_table(CONN[], dictionary, args[:dictionary], column_defs=[
+                "collectionfreq INT NOT NULL",
+                "docfreq INT NOT NULL",
+                "idf DOUBLE PRECISION NOT NULL",
+                "term TEXT PRIMARY KEY NOT NULL"
+            ])
+            @info "Successfully loaded dictionary table"
+
+            @info "Loading postings table:" args[:postings]
+            load_table(CONN[], postings, args[:postings], column_defs=[
+                "doc_id TEXT NOT NULL",
+                "term TEXT NOT NULL REFERENCES $(args[:dictionary]) ON DELETE CASCADE",
+                "termfreq INTEGER NOT NULL",
+                "tf DOUBLE PRECISION NOT NULL",
+                "tfidf DOUBLE PRECISION NOT NULL",
+                "PRIMARY KEY (doc_id, term)"
+            ])
+            @info "Successfully loaded postings table"
+        end
 
         @info "Building document vector"
         dvec = build_document_vector(postings)
+
+        if !isempty(args[:search_string])
+
+        end
     catch e
         ex = stacktrace(catch_backtrace())
         @error "Exception:" e, ex
