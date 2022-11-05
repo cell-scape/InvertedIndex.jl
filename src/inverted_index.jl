@@ -49,7 +49,7 @@ function build_inverted_index(df; id_col1=:president, id_col2=:date, text_col=:s
     @info "dictionary table" size(dictionary_table)
 
     postings_table = build_postings_table(doc_ids, documents; tf_method=tf_method)
-    sort!(unique!(postings_table, [:doc_id, :term]), :doc_id)
+    sort!(unique!(postings_table, [:doc_id, :term]), [:doc_id, :term])
     dd = Dict(row.term => row.idf for row in eachrow(dictionary_table))
     postings_table[!, :tfidf] = [dd[row.term] * row.tf for row in eachrow(postings_table)]
     @info "postings table" size(postings_table)

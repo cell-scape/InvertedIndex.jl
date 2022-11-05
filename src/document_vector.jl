@@ -19,5 +19,9 @@ julia> A = build_document_vector(dictionary, postings)
 function build_document_vector(postings)
     terms = unique(postings.term)
     documents = unique(postings.doc_id)
-    A = zeros((length(terms), length(documents)))
+    dvec = zeros(X(documents), Y(terms))
+    for row in eachrow(postings)
+        dvec[X(At(row.doc_id)), Y(At(row.term))] = row.tfidf
+    end
+    return dvec
 end
