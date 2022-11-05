@@ -38,7 +38,7 @@ function build_inverted_index(df; id_col1=:president, id_col2=:date, text_col=:s
     @info "sanitize documents" length(documents)
 
 
-    coll_freq = join(documents, ' ') |> split |> counter
+    coll_freq = join(documents, ' ') |> sanitize_text |> counter
     @info "Collection Frequency" length(coll_freq)
 
     terms = collect(keys(coll_freq))
@@ -85,7 +85,7 @@ function build_postings_table(doc_ids, documents; tf_method=relative_freq)::Data
     postings = Dict(:term => String[], :doc_id => String[], :termfreq => Int64[], :tf => Float64[])
     for (doc_id, document) in zip(doc_ids, documents)
         if !haskey(TERM_FREQUENCIES[], doc_id)
-            TERM_FREQUENCIES[][doc_id] = split(document) |> counter
+            TERM_FREQUENCIES[][doc_id] = sanitize_text(document) |> counter
         end
         term_freq = TERM_FREQUENCIES[][doc_id]
         for (term, freq) in term_freq

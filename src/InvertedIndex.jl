@@ -15,19 +15,19 @@ include("inverted_index.jl")
 include("document_vector.jl")
 
 export build_inverted_index, build_dictionary_table, build_postings_table, connect, get_table, julia_main, CONN
-export build_document_vector, cosine_similarity, remove_stopwords
+export build_document_vector, cosine_similarity, sanitize_text
 
 #= PyCall =#
 
 function __init__()
     py"""
-    import string
+    from string import ascii_letters, whitespace
     from nltk.corpus import stopwords
     from nltk.stem import PorterStemmer
     from nltk.tokenize import word_tokenize
 
 
-    def sanitize_text(text: str) -> str:
+    def sanitize_text(text: str) -> list[str]:
         '''
         Removes english stop words, numbers, punctuation, etc. from a string using nltk.
         May require nltk.download('stopwords') and nltk.download('punkt').
@@ -36,9 +36,9 @@ function __init__()
         text (str): A string
 
         Returns:
-        str: A string with stop words, numbers, punctuation, etc. removed, with all words stemmed
+        list[str]: A list of strings with stop words, numbers, punctuation, etc. removed, all words stemmed
         '''
-        text = " ".join(filter(lambda ch: ch in string.ascii_letters, text)).strip().lower()
+        text = "".join(filter(lambda ch: ch in ascii_letters + whitespace, text)).strip().lower()
         stemmer = PorterStemmer()
         stop_words = set(stopwords.words('english'))
         words = list(filter(lambda word: word not in stop_words, word_tokenize(text)))
