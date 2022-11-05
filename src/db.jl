@@ -85,19 +85,8 @@ function load_table(conn, df, table; column_defs=nothing)
         column_defs = [string(name, " TEXT") for name in names]
     end
     _ = create_table(conn, table, column_defs)
-    row_strings = map(eachrow(df)) do row
-        rowstring = String[]
-        for field in row
-            if ismissing(field)
-                push!(rowstring, ",")
-            else
-                push!(rowstring, string(field))
-            end
-        end
-        join(rowstring, ',')
-        push!(rowstring, "\n")
-        join(rowstring)
-    end
+    dropmissing!(df) # just in case
+    row_strings = join([join(collect(row), ',') for row in eachrow(df)], '\n')
     copyin = LibPQ.CopyIn("COPY $table FROM STDIN (FORMAT CSV);", row_strings)
     LibPQ.execute(conn, copyin)
 end
