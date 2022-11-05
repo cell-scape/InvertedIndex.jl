@@ -21,23 +21,28 @@ export build_document_vector, cosine_similarity, remove_stopwords
 
 function __init__()
     py"""
-    from nltk.tokenize import word_tokenize
+    import string
     from nltk.corpus import stopwords
+    from nltk.stem import PorterStemmer
+    from nltk.tokenize import word_tokenize
 
-    def remove_stopwords(text: str) -> str:
+
+    def sanitize_text(text: str) -> str:
         '''
-        Removes english stop words from a string using nltk. 
+        Removes english stop words, numbers, punctuation, etc. from a string using nltk.
         May require nltk.download('stopwords') and nltk.download('punkt').
 
         Parameters:
         text (str): A string
 
         Returns:
-        str: A string with stop words removed
+        str: A string with stop words, numbers, punctuation, etc. removed, with all words stemmed
         '''
-        words = word_tokenize(text.lower().strip())
+        text = " ".join(filter(lambda ch: ch in string.ascii_letters, text)).strip().lower()
+        stemmer = PorterStemmer()
         stop_words = set(stopwords.words('english'))
-        return " ".join(list(filter(lambda w: w not in stop_words, words)))
+        words = list(filter(lambda word: word not in stop_words, word_tokenize(text)))
+        return list(map(lambda word: stemmer.stem(word), words))
     """
 end
 

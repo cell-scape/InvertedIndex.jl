@@ -251,21 +251,21 @@ const IDF_METHODS = Dict{String,Function}(
     "probabilistic_inv_doc_freq" => probabilistic_inv_doc_freq,
 )
 
-"""
-    remove_stopwords(text::String)::String
 
-Removes stopwords from a string using NLTK and PyCall.
+"""
+    sanitize_text(text::String)::Vector{String}
+
+Removes stopwords, punctuation, etc, and returns a list of stems using NLTK and PyCall.
 
 # Arguments
 - `text::String`: A string
 
 # Returns
-- `::String`: A string with stopwords removed
+- `::String`: A string with stopwords removed, stemmed, etc.
 
 # Examples
 ```julia-repl
-julia> remove_stopwords("all the stop words have been removed from this string")
-"stop words removed string"
+julia> sanitize_text("all the stop words have been removed from this string")
 ```
 """
-remove_stopwords(text) = py"remove_stopwords"(text)
+sanitize_text(text) = py"sanitize_text"(text)
