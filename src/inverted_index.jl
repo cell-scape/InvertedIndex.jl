@@ -23,6 +23,7 @@ julia> dictionary, posting = build_inverted_index(df)
 ```
 """
 function build_inverted_index(df; id_col1=:president, id_col2=:date, text_col=:speech, tf_method=relative_freq, idf_method=inv_doc_freq_smooth)::NTuple{2,DataFrame}
+    dropmissing!(df, [id_col1, id_col2, text_col])
     isempty(df) && return df
     doc_ids = string.(df[!, id_col1], "_", df[!, id_col2])
     documents = replace.(ch -> ispunct(first(ch)) || iscntrl(first(ch)) ? " " : ch, split.(lowercase.(df[!, text_col]), "")) .|> join
