@@ -35,7 +35,7 @@ Calculate the cosine similarity between two vectors
 - `B::Vector{Float64}`: A vector
 
 # Returns
-- `::`
+- `::Float64`
 """
 cosine_similarity(A, B) = (A ⋅ B) / (norm(A) * norm(B))
 
@@ -49,7 +49,7 @@ Look up state of the union addresses by relevant words
 - `keywords::Vector{String}`: A sequence of words to search for in the document matrix
 
 # Returns
-- `::String`: The doc_id of the highest weighted text
+- `::Tuple{String, Float64}`: The doc_id of the highest weighted text and its cosine similarity to the query
 
 # Examples
 ```julia-repl
@@ -57,27 +57,28 @@ julia> query(["freedom", "speech"])
 
 ```
 """
-function query(keywords, dvec)::String
-    isempty(keywords) && return ""
+function query(keywords, dvec)
+    isempty(keywords) && return nothing
 
+    keywords = sanitize_string(keywords) |> sanitize_text
     terms, docs = dvec.dims
-    term_freq = Dict(term => 0 for term in terms)
-    for keyword in keywords
-        if haskey(terms, keyword)
-            term_freq[keyword] += 1
-        end
-    end
+    keywords = filter(∈(terms), keywords)
 
-    best_sim = 0.0
-    best_match = ""
-    for doc in docs
-        sim = cosine_similarity(terms, dvec[X(), Y(At(doc))])
-        if sim > best_match
-            best_sim = sim
-            best_match = doc
+    isempty(keywords) && return nothing
+
+    kws = ones(Float64, length(keywords))
+    dvec = dvec[X(At(keywords)), Y()]
+
+    sim = 0.0
+    idx = nothing
+    for i in 1:length(docs)
+        s = cosine_similarity(kws, dvec[:, i])
+        if s > sim
+            sim = s
+            idx = i
         end
     end
-    return best_match, best_sim
+    return docs[idx], sim
 end
 
 

@@ -120,7 +120,7 @@ function argparser()
         default = :speech
         "--search-string", "-S"
         help = "A search string for use with document vector"
-        default = "freedom"
+        default = "freedom of speech"
     end
     return s
 end
@@ -144,7 +144,6 @@ julia> julia_main()
 ```
 """
 function julia_main()::Cint
-    @info "Entrypoint: julia_main()"
     ap = argparser()
     args = parse_args(ARGS, ap, as_symbols=true)
     @info "CLI args: " args
@@ -197,11 +196,9 @@ function julia_main()::Cint
 
         @info "Building document vector"
         dvec = build_document_vector(postings)
-        @info dvec
         if !isempty(args[:search_string])
             @info "Search string" args[:search_string]
-            keywords = sanitize_string(args[:search_string]) |> sanitize_text
-            result = query(keywords, dvec)
+            @info "Search result" query(args[:search_string], dvec)
         end
     catch e
         ex = stacktrace(catch_backtrace())
